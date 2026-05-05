@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PFZ Result – AquaZone</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="logo">🐟 AquaZone</span>
+      <h1>Prediction Result</h1>
+      <p class="tagline">
+        Location: {{ "%.4f"|format(latitude) }}°N, {{ "%.4f"|format(longitude) }}°E
+        {% if result.coastal_zone != "Unknown" %}
+          &nbsp;·&nbsp; {{ result.coastal_zone }}
+        {% endif %}
+      </p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ── Verdict banner ──────────────────────────────── -->
+    <div class="verdict-banner {{ 'verdict-pfz' if result.is_pfz else 'verdict-non-pfz' }}">
+      <div class="verdict-icon">{{ '🎣' if result.is_pfz else '🚫' }}</div>
+      <div class="verdict-text">
+        <h2>{{ result.classification }}</h2>
+        <p>
+          Confidence score:
+          <strong>{{ (result.confidence * 100)|round(1) }}%</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <!-- ── Environmental Factors ───────────────────── -->
+      <section class="card factors-card">
+        <h3>🌊 Environmental Factors</h3>
+        <table class="factors-table">
+          <thead>
+            <tr><th>Parameter</th><th>Value</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sea Surface Temperature</td>
+              <td>{{ result.factors.sst_celsius }} °C</td>
+              <td class="{{ 'status-ok' if result.factors.sst_optimal else 'status-warn' }}">
+                {{ '✅ Optimal' if result.factors.sst_optimal else '⚠️ Outside range' }}
+              </td>
+            </tr>
+            <tr>
+              <td>Chlorophyll-a</td>
+              <td>{{ result.factors.chlorophyll_mg_m3 }} mg/m³</td>
+              <td class="{{ 'status-ok' if result.factors.chlorophyll_sufficient else 'status-warn' }}">
+                {{ '✅ Sufficient' if result.factors.chlorophyll_sufficient else '⚠️ Low' }}
+              </td>
+            </tr>
+            <tr>
+              <td>Salinity</td>
+              <td>{{ result.factors.salinity_ppt }} ppt</td>
+              <td class="{{ 'status-ok' if result.factors.salinity_suitable else 'status-warn' }}">
+                {{ '✅ Suitable' if result.factors.salinity_suitable else '⚠️ Unsuitable' }}
+              </td>
+            </tr>
+            <tr>
+              <td>Water Depth</td>
+              <td>{{ result.factors.depth_m }} m</td>
+              <td class="{{ 'status-ok' if result.factors.depth_adequate else 'status-warn' }}">
+                {{ '✅ Adequate' if result.factors.depth_adequate else '⚠️ Shallow' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ── Historical Data ────────────────────────── -->
+      <section class="card history-card">
+        <h3>📈 Historical Fishing Data</h3>
+        <div class="stat-row">
+          <div class="stat-box">
+            <span class="stat-value">{{ result.factors.historical_records_nearby }}</span>
+            <span class="stat-label">Nearby Records</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-value">{{ (result.factors.historical_pfz_ratio * 100)|round(0)|int }}%</span>
+            <span class="stat-label">PFZ Success Rate</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-value">
+              {% if result.factors.avg_historical_catch_kg > 0 %}
+                {{ result.factors.avg_historical_catch_kg|int }} kg
+              {% else %}
+                N/A
+              {% endif %}
+            </span>
+            <span class="stat-label">Avg. Catch</span>
+          </div>
+        </div>
+
+        <!-- Confidence meter -->
+        <div class="confidence-meter">
+          <div class="confidence-label">
+            Overall Confidence: {{ (result.confidence * 100)|round(1) }}%
+          </div>
+          <div class="meter-track">
+            <div
+              class="meter-fill {{ 'fill-pfz' if result.is_pfz else 'fill-non-pfz' }}"
+              style="width: {{ (result.confidence * 100)|round(1) }}%"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Map ──────────────────────────────────────── -->
+      <section class="card map-card result-map-card">
+        <h3>🗺️ Location</h3>
+        <div id="result-map"></div>
+      </section>
+
+      <!-- ── Recommendations ───────────────────────── -->
+      <section class="card recs-card">
+        <h3>💡 Recommendations</h3>
+        <ul class="recs-list">
+          {% for rec in result.recommendations %}
+          <li>{{ rec }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    </div>
+
+    <div class="back-actions">
+      <a href="/" class="btn btn-secondary">← New Prediction</a>
+      <a
+        href="/predict?lat={{ latitude }}&lon={{ longitude }}"
+        class="btn btn-outline"
+      >🔄 Refresh</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>AquaZone PFZ Predictor &copy; 2024 – Supporting sustainable fishing communities</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Result page map – mark the queried location
+    var map = L.map("result-map").setView([{{ latitude }}, {{ longitude }}], 7);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+
+    var color = {{ 'true' if result.is_pfz else 'false' }} ? "#27ae60" : "#e74c3c";
+    L.circleMarker([{{ latitude }}, {{ longitude }}], {
+      radius: 12,
+      color: color,
+      fillColor: color,
+      fillOpacity: 0.7,
+      weight: 2,
+    })
+      .addTo(map)
+      .bindPopup(
+        "<b>{{ result.classification }}</b><br>"
+        + "{{ '%.4f'|format(latitude) }}°N, {{ '%.4f'|format(longitude) }}°E"
+      )
+      .openPopup();
+  </script>
+</body>
+</html>

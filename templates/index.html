@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquaZone – PFZ Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="logo">🐟 AquaZone</span>
+      <h1>Potential Fishing Zone Predictor</h1>
+      <p class="tagline">Identify optimal fishing locations using marine environmental data</p>
+    </div>
+  </header>
+
+  <main class="container">
+    {% if errors %}
+    <div class="alert alert-error">
+      <ul>
+        {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="card-grid">
+      <!-- ── Coordinate Input ─────────────────────────── -->
+      <section class="card form-card">
+        <h2>📍 Enter Coordinates</h2>
+        <p class="hint">Type coordinates manually or click on the map to auto-fill.</p>
+        <form action="/predict" method="POST" id="pfz-form">
+          <div class="form-group">
+            <label for="latitude">Latitude (°N)</label>
+            <input
+              type="number"
+              id="latitude"
+              name="latitude"
+              step="0.0001"
+              min="-90"
+              max="90"
+              placeholder="e.g. 9.5"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="longitude">Longitude (°E)</label>
+            <input
+              type="number"
+              id="longitude"
+              name="longitude"
+              step="0.0001"
+              min="-180"
+              max="180"
+              placeholder="e.g. 79.0"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Predict Fishing Zone</button>
+        </form>
+
+        <div class="quick-locations">
+          <h3>Quick Locations</h3>
+          <div class="location-chips">
+            <button class="chip" data-lat="8.5" data-lon="78.2">Gulf of Mannar</button>
+            <button class="chip" data-lat="9.5" data-lon="79.5">Palk Bay</button>
+            <button class="chip" data-lat="12.5" data-lon="80.3">Coromandel Coast</button>
+            <button class="chip" data-lat="18.5" data-lon="72.8">Arabian Sea</button>
+            <button class="chip" data-lat="10.0" data-lon="73.0">Lakshadweep</button>
+            <button class="chip" data-lat="21.5" data-lon="88.5">Sundarbans</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Map ───────────────────────────────────────── -->
+      <section class="card map-card">
+        <h2>🗺️ Select on Map</h2>
+        <p class="hint">Click anywhere on the map to select a location.</p>
+        <div id="map"></div>
+        <p id="map-coords" class="map-coords-display">No location selected</p>
+      </section>
+    </div>
+
+    <!-- ── Info cards ─────────────────────────────────── -->
+    <section class="info-strip">
+      <div class="info-item">
+        <span class="info-icon">🌡️</span>
+        <strong>Sea Surface Temp</strong>
+        <span>Optimal: 26–30.5 °C</span>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">🌿</span>
+        <strong>Chlorophyll-a</strong>
+        <span>Minimum: 0.8 mg/m³</span>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">🧂</span>
+        <strong>Salinity</strong>
+        <span>Suitable: 30–36.5 ppt</span>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">📊</span>
+        <strong>Historical Data</strong>
+        <span>30+ fishing records</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>AquaZone PFZ Predictor &copy; 2024 – Supporting sustainable fishing communities</p>
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+</body>
+</html>

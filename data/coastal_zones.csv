@@ -1,0 +1,16 @@
+zone_id,zone_name,min_lat,max_lat,min_lon,max_lon,coast_type,depth_m,salinity_ppt
+CZ001,Gulf of Mannar North,8.0,9.5,78.0,79.5,Tropical,50,35.2
+CZ002,Gulf of Mannar South,8.5,9.0,77.5,78.5,Tropical,75,34.8
+CZ003,Palk Bay,9.5,10.5,79.5,80.5,Semi-enclosed,30,28.5
+CZ004,Coromandel Coast North,10.5,12.0,79.5,80.5,Open,60,34.9
+CZ005,Coromandel Coast South,12.0,13.5,80.0,80.5,Open,80,35.1
+CZ006,Bay of Bengal West,13.5,15.0,80.0,81.0,Open,100,35.0
+CZ007,Konkan Coast,15.0,17.0,72.5,73.5,Tropical,90,34.7
+CZ008,Arabian Sea Northeast,17.0,20.0,72.0,73.0,Open,120,35.5
+CZ009,Lakshadweep Sea,8.0,12.0,72.0,74.5,Island,200,35.8
+CZ010,Andaman Sea,10.0,13.5,92.0,94.0,Semi-enclosed,150,34.5
+CZ011,Malabar Coast,10.0,12.5,75.5,76.5,Tropical,70,34.9
+CZ012,Gujarat Coast,20.0,23.5,68.0,72.5,Arid,40,37.2
+CZ013,Sundarbans Delta,21.0,22.5,88.0,90.0,Mangrove,10,22.0
+CZ014,Odisha Coast,19.0,21.0,84.5,87.0,Open,55,33.8
+CZ015,Kerala Backwaters,8.5,11.5,76.0,77.0,Lagoon,5,10.5
